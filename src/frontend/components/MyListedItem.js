@@ -32,7 +32,7 @@ export default function MyListedItem({ marketPlace, nft, account }) {
         const itemCount = await marketPlace.itemCount()
         let listedItems = []
         let soldItems = []
-        for (let i = 0; i < itemCount; i++) {
+        for (let i = 1; i <= itemCount; i++) {
             const item = await marketPlace.items(i)
             if (item.seller.toLowerCase() === account) {
                 // get uri url from nft contract

@@ -16,7 +16,6 @@ const Create = ({ marketPlace, nft }) => {
         if (typeof file !== 'undefined') {
             try {
                 const result = await client.add(file)
-                console.log(result)
                 setImage(`https://ipfs.infura.io/ipfs/${result.path}`)
             } catch (error) {
                 console.log("ipfs image upload error: ", error)
@@ -55,6 +54,7 @@ const Create = ({ marketPlace, nft }) => {
                         <Row className="g-4">
                             <Form.Control
                                 type="file"
+                                required
                                 name="file"
                                 onChange={uploadToIPFS}
                             />
@@ -62,18 +62,21 @@ const Create = ({ marketPlace, nft }) => {
                                 onChange={(event) => setName(event.target.value)}
                                 size="lg"
                                 type="text"
+                                required
                                 placeholder="Name"
                             />
                             <Form.Control
                                 onChange={(event) => setDescription(event.target.value)}
                                 size="lg"
                                 as="textarea"
+                                required
                                 placeholder="Description"
                             />
                             <Form.Control
                                 onChange={(event) => setPrice(event.target.value)}
                                 size="lg"
                                 type="number"
+                                required
                                 placeholder="Price in ETH"
                             />
                             <div className="d-grid px-0">

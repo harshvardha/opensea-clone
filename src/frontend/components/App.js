@@ -26,6 +26,13 @@ function App() {
     const provider = new ethers.providers.Web3Provider(window.ethereum)
     // Get signer
     const signer = provider.getSigner()
+    window.ethereum.on("chainChanged", (chainId) => {
+      window.location.reload()
+    })
+    window.ethereum.on("accountsChanged", async (accounts) => {
+      setAccount(accounts[0])
+      await web3Handler()
+    })
     loadContracts(signer)
   }
 

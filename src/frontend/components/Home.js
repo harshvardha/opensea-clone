@@ -9,7 +9,7 @@ const Home = ({ marketPlace, nft }) => {
     const loadMarketPlaceItems = async () => {
         const itemCount = await marketPlace.itemCount()
         let items = []
-        for (let i = 0; i < itemCount; i++) {
+        for (let i = 1; i <= itemCount; i++) {
             const item = await marketPlace.items(i)
             if (!item.sold) {
                 // get url from nft contract
@@ -30,8 +30,8 @@ const Home = ({ marketPlace, nft }) => {
                 })
             }
         }
-        setItems(items)
         setLoading(false)
+        setItems(items)
     }
 
     const buyMarketItems = async (item) => {

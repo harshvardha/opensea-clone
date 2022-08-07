@@ -10,12 +10,15 @@ describe("NFTMarketPlace", function () {
     beforeEach(async function () {
         //get contract factories
         const NFT = await ethers.getContractFactory("NFT")
-        const MarketPlace = await ethers.getContractFactory("Marketplace")
+        const MarketPlace = await ethers.getContractFactory("MarketPlace")
         //get signers
-        deployer, addr1, addr2 = await ethers.getSigners()
+        let [dep, address1, address2] = await ethers.getSigners()
+        deployer = dep
+        addr1 = address1
+        addr2 = address2
         //deploy contracts
         nft = await NFT.deploy()
-        marketPlace = MarketPlace.deploy(feePercent)
+        marketPlace = await MarketPlace.deploy(feePercent)
     })
 
     describe("Deployment", function () {
@@ -35,7 +38,7 @@ describe("NFTMarketPlace", function () {
             await nft.connect(addr1).mint(URI)
             expect(await nft.tokenCount()).to.equal(1)
             expect(await nft.balanceOf(addr1.address)).to.equal(1)
-            expect(await nft.tokenURI(1)).to.equal("URI")
+            expect(await nft.tokenURI(1)).to.equal(URI)
             //addr2 mints an nft
             await nft.connect(addr2).mint(URI)
             expect(await nft.tokenCount()).to.equal(2)
@@ -68,7 +71,7 @@ describe("NFTMarketPlace", function () {
             //Item Count should now be 1
             expect(await marketPlace.itemCount()).to.equal(1)
             //Get item from items mapping the check fields to ensure they are correct
-            const item = marketPlace.items(1)
+            const item = await marketPlace.items(1)
             expect(item.itemId).to.equal(1)
             expect(item.nft).to.equal(nft.address)
             expect(item.tokenId).to.equal(1)
@@ -89,7 +92,7 @@ describe("NFTMarketPlace", function () {
             // addr1 mints an nft
             await nft.connect(addr1).mint(URI)
             // addr1 approves marketplace to spend nft
-            await marketPlace.connect(addr1).setApprovalForAll(marketPlace.address, true)
+            await nft.connect(addr1).setApprovalForAll(marketPlace.address, true)
             // addr1 makes their nft a marketplace item
             await marketPlace.connect(addr1).makeItem(nft.address, 1, toWei(price))
         })
@@ -97,6 +100,8 @@ describe("NFTMarketPlace", function () {
         it("Should update item as sold, pay seller, transfer NFT to buyer, charge fees and emit a Bought event", async function () {
             const sellerInitialEthBal = await addr1.getBalance()
             const feeAccountInitialEthBal = await deployer.getBalance()
+            console.log(sellerInitialEthBal)
+            console.log(feeAccountInitialEthBal)
             // fetch items total price (marketFees + itemPrice)
             let totalPriceInWei = await marketPlace.getTotalPrice(1)
             // addr2 purchases the item
@@ -112,16 +117,18 @@ describe("NFTMarketPlace", function () {
                 )
             const sellerFinalEthBal = await addr1.getBalance()
             const feeAccountFinalEthBal = await deployer.getBalance()
+            console.log(sellerFinalEthBal)
+            console.log(feeAccountFinalEthBal)
             // seller should recieve payment for the price of the NFT sold
-            expect(fromWei(sellerFinalEthBal)).to.equal(price + fromWei(sellerInitialEthBal))
+            expect(+fromWei(sellerFinalEthBal)).to.equal(price + +fromWei(sellerInitialEthBal))
             // calculate fee
             const fee = (feePercent / 100) * price
             // feeAccount should recieve fee
-            expect(fromWei(feeAccountFinalEthBal)).to.equal(fee + fromWei(feeAccountInitialEthBal))
+            expect(+fromWei(feeAccountFinalEthBal)).to.equal(+fee + +fromWei(feeAccountInitialEthBal))
             // The buyer should now own the nft
             expect(await nft.ownerOf(1)).to.equal(addr2.address)
             // Item should be marked as sold
-            expect((await marketPlace.items(i)).sold).to.equal(true)
+            expect((await marketPlace.items(1)).sold).to.equal(true)
         })
 
         it("Should fail for invalid item ids, sold items and when not enough eth is paid", async function () {
